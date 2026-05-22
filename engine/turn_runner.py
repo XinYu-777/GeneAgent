@@ -21,6 +21,24 @@ DEFAULT_AGENT_FACTIONS = (
     FactionId.SOVIET,
 )
 
+# 脚本多回合时复用同一事件循环，避免「Event loop is closed」
+_runner_loop: asyncio.AbstractEventLoop | None = None
+
+
+def _run_async(coro):
+    global _runner_loop
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            raise RuntimeError("closed")
+    except RuntimeError:
+        loop = None
+    if loop is None or loop.is_closed():
+        _runner_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(_runner_loop)
+        loop = _runner_loop
+    return loop.run_until_complete(coro)
+
 
 def create_default_agents(*, use_llm: bool = False) -> list[BaseAgent]:
     """四国独立 Agent；use_llm 时无 Key 仍回退规则 Bot。"""
@@ -68,7 +86,7 @@ def collect_agent_actions(
 ) -> tuple[list[Action], list[AgentDecision]]:
     """同步入口：收集各方行动列表。"""
     roster = agents or create_default_agents(use_llm=use_llm)
-    decisions = asyncio.run(
+    decisions = _run_async(
         collect_agent_decisions(state, roster, trace_dir=trace_dir)
     )
     actions: list[Action] = []
