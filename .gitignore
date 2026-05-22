@@ -26,7 +26,8 @@ web/node_modules/
 web/dist/
 
 # Runtime
-snapshots/
+snapshots/*
+!snapshots/.gitkeep
 traces/
 *.log
 .coverage

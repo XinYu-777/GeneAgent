@@ -1,7 +1,7 @@
 # 东亚风云 — 实施计划 (plan.md)
 
 本文档与 [README.md](README.md) 配套，记录分阶段交付目标、模块划分与验收标准。  
-**当前进度**：阶段 3 已完成；阶段 4 待开始。
+**当前进度**：阶段 4 已完成；阶段 5 待开始。
 
 ---
 
@@ -24,7 +24,7 @@
 | 1 | 世界引擎核心 | ✅ 完成 | Verifier、Merger、apply、events、GameSession.advance_turn |
 | 2 | Multi-Agent 层 | ✅ 完成 | observation、四国 Agent、turn_runner、trace |
 | 3 | 玩家决断链路 | ✅ 完成 | NL/意图卡→诏令、国力修正、中方 AI 服从 |
-| 4 | API 层 | ⬜ 待开始 | FastAPI、snapshot JSON、WebSocket |
+| 4 | API 层 | ✅ 完成 | FastAPI REST + WebSocket、snapshots 持久化 |
 | 5 | 前端 MVP | ⬜ 待开始 | SVG 地图、HUD、决断 Modal、回合动画 |
 | 6 | 集成与演示 | ⬜ 待开始 | 1941 端到端可录屏 demo |
 | 7 | 评测与打磨 | ⬜ 待开始 | 固定 seed 回归、Trace 导出、伦理文案 |
@@ -172,35 +172,28 @@ python scripts/play_campaign.py --llm  # DeepSeek 解析自然语言
 
 ## 阶段 4：API 层
 
-### 端点（草案）
+### 已实现端点
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/game/new` | 加载 scenario，返回初始 snapshot |
-| POST | `/game/advance` | 推进一回合（若待决断则 409） |
+| GET | `/health` | 健康检查 |
+| POST | `/game/new` | 新建对局，返回 `game_id` + 初始 snapshot |
+| POST | `/game/advance` | 推进一回合（待决断 → 409） |
 | POST | `/game/decision` | 提交玩家决断 |
-| GET | `/game/state` | 当前 snapshot |
-| GET | `/game/replay/{turn}` | 历史 snapshot |
-| WS | `/game/stream` | 自动播放推送 `turn_complete` |
+| GET | `/game/state?game_id=` | 当前 snapshot |
+| GET | `/game/replay/{turn}?game_id=` | 历史 snapshot |
+| WS | `/game/stream?game_id=&interval_ms=&max_steps=` | 自动推进推送 |
 
-### Snapshot 核心字段
+### 启动
 
-```json
-{
-  "turn": 7,
-  "regions": [{"id": "south_china", "owner": "china", "garrison": 0.6}],
-  "routes": [{"id": "burma_road", "status": "open"}],
-  "factions": {"china": {"manpower": 400, "supply": 0.5}},
-  "actions_played": [{"faction": "japan", "type": "advance", "from": "...", "to": "..."}],
-  "active_directives": [{"priority": "hold_burma", "turns_left": 2}],
-  "pending_decision": null
-}
+```bash
+uvicorn api.main:app --reload --port 8000
 ```
 
-### 验收
+### 验收（`pytest tests/test_phase4.py`）
 
-- Postman/curl 可完整跑完 5 回合（Mock Agent）
-- `snapshots/` 自动持久化每回合 JSON
+- [x] curl/TestClient 新建 → 决断 → 推进 5 回合
+- [x] `snapshots/{game_id}/turn_N.json` 自动写入
 
 ---
 

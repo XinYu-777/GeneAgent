@@ -84,7 +84,9 @@ GeneAgent/
 │   ├── test_phase0.py
 │   ├── test_phase1.py
 │   └── test_phase2.py      # Multi-Agent 验收
-├── api/                    # [待建] FastAPI
+├── api/                    # FastAPI（阶段 4）
+│   ├── app.py
+│   └── main.py
 ├── web/                    # [待建] React 前端
 └── snapshots/              # [待建] 回合回放 JSON
 ```
@@ -141,6 +143,28 @@ python scripts/play_campaign.py --llm  # 用 DeepSeek 理解你的战略诏令
 ```
 
 `submit_player_decision(text="不惜代价保住滇缅公路")` → 诏令注入中国 Agent + 立即修正国力。
+
+### HTTP API（阶段 4）
+
+```bash
+pip install -r requirements.txt
+uvicorn api.main:app --reload --port 8000
+```
+
+```bash
+# 新建对局
+curl -s -X POST http://127.0.0.1:8000/game/new -H 'Content-Type: application/json' -d '{}' | jq .
+
+# 提交决断（替换 GAME_ID）
+curl -s -X POST http://127.0.0.1:8000/game/decision -H 'Content-Type: application/json' \
+  -d '{"game_id":"GAME_ID","intent_id":"guerrilla_expand"}' | jq .
+
+# 推进回合
+curl -s -X POST http://127.0.0.1:8000/game/advance -H 'Content-Type: application/json' \
+  -d '{"game_id":"GAME_ID","use_stub_ai":true}' | jq .
+```
+
+快照目录：`snapshots/{game_id}/turn_0.json` …
 
 ---
 
