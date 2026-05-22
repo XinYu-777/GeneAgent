@@ -138,6 +138,27 @@ python -c "from engine import load_scenario; s=load_scenario('scenarios/1941.yam
 
 ---
 
+## 发布到 GitHub
+
+本地仓库已初始化并完成首次提交。若远程尚未创建，在终端执行（需已安装 [GitHub CLI](https://cli.github.com/) 并登录）：
+
+```bash
+cd GeneAgent
+gh auth login
+gh repo create GeneAgent --public \
+  --description "East Asia WWII multi-agent strategic sim (东亚风云)" \
+  --source=. --remote=origin --push
+```
+
+若仓库已在网页端创建（例如 `https://github.com/<你的用户名>/GeneAgent`），则：
+
+```bash
+git remote add origin git@github.com:<你的用户名>/GeneAgent.git
+git push -u origin main
+```
+
+---
+
 ## 贡献
 
 欢迎 Issue / PR。扩展决断点请只修改 `scenarios/*.yaml` 并补充 `events` 与引擎效果实现。
