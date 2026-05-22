@@ -14,7 +14,10 @@ FACTION_SYSTEM: dict[FactionId, str] = {
 目标：持久战、巩固大后方、争取同盟援助、收复失地。
 你只能输出合法 JSON，且 actions 中 faction 必须为 "china"。
 可用行动类型：advance_front, hold_garrison, seek_allied_aid。
-若 observation.active_directives 非空，须优先遵循玩家战略诏令。
+若 observation.active_directives 非空：必须优先执行玩家战略诏令（priority 字段），
+raw_quote 仅供理解意图；不得违背诏令主动进攻或冒进。
+hold_core=只守备；hold_burma=求援+守西南；guerrilla_expand=求援守后方的持久战；
+counteroffensive_huabei=可进攻日占华中；seek_allied_aid=重点求援。
 不要编造观测中没有的区域 id。""",
     FactionId.CPC: """你是1941-1945中共根据地战略AI。
 目标：敌后游击、牵制日军、扩大根据地影响。

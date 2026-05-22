@@ -13,6 +13,10 @@ from engine.state import GameState, game_state_from_world, snapshot_from_state
 from engine.agents.base import BaseAgent
 from engine.stub_ai import generate_stub_actions
 from engine.turn_runner import collect_agent_actions, create_default_agents
+from engine.decision_points import DecisionPoint
+from engine.directives import activate_directive, apply_directive_immediate_effects
+from engine.player_intent import DirectiveRejectError, parse_player_input, verify_directive
+from engine.schemas import StrategicDirective
 from engine.world import (
     DEFAULT_MAP_PATH,
     DEFAULT_SCENARIO_PATH,
@@ -84,8 +88,41 @@ class GameSession:
             is not None
         )
 
+    def get_pending_decision_point(self) -> DecisionPoint | None:
+        return self.state.scenario.pending_decision(
+            self.state.turn,
+            self.state.fired_events,
+            self.state.resolved_decision_ids,
+        )
+
     def resolve_decision(self, decision_id: str) -> None:
+        """仅标记已处理（跳过玩家输入，调试用）。"""
         self.state.resolved_decision_ids.add(decision_id)
+
+    def submit_player_decision(
+        self,
+        *,
+        intent_id: str | None = None,
+        text: str | None = None,
+        use_llm: bool = False,
+    ) -> tuple[StrategicDirective, str]:
+        """
+        玩家决断：自然语言或意图卡 → 诏令 → 立即影响国力 → 注入中国 Agent。
+
+        返回 (StrategicDirective, 战报摘要)。
+        """
+        dp = self.get_pending_decision_point()
+        if dp is None:
+            raise ValueError("当前没有待处理的统帅部决断")
+
+        directive = parse_player_input(
+            dp, intent_id=intent_id, text=text, use_llm=use_llm
+        )
+        verify_directive(directive, self.state, dp)
+        activate_directive(self.state, directive)
+        self.state.resolved_decision_ids.add(dp.id)
+        summary = apply_directive_immediate_effects(self.state, directive)
+        return directive, summary
 
     def get_snapshot(self, actions_played: list[ActionPlayed] | None = None) -> GameSnapshot:
         return snapshot_from_state(self.state, actions_played)

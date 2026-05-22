@@ -1,7 +1,7 @@
 # 东亚风云 — 实施计划 (plan.md)
 
 本文档与 [README.md](README.md) 配套，记录分阶段交付目标、模块划分与验收标准。  
-**当前进度**：阶段 2 已完成；阶段 3 待开始。
+**当前进度**：阶段 3 已完成；阶段 4 待开始。
 
 ---
 
@@ -23,7 +23,7 @@
 | 0 | 配置与契约 | ✅ 完成 | scenario YAML、决断加载、schemas、world、snapshot-schema |
 | 1 | 世界引擎核心 | ✅ 完成 | Verifier、Merger、apply、events、GameSession.advance_turn |
 | 2 | Multi-Agent 层 | ✅ 完成 | observation、四国 Agent、turn_runner、trace |
-| 3 | 玩家决断链路 | ⬜ 待开始 | NL→Directive 解析、注入 China Agent |
+| 3 | 玩家决断链路 | ✅ 完成 | NL/意图卡→诏令、国力修正、中方 AI 服从 |
 | 4 | API 层 | ⬜ 待开始 | FastAPI、snapshot JSON、WebSocket |
 | 5 | 前端 MVP | ⬜ 待开始 | SVG 地图、HUD、决断 Modal、回合动画 |
 | 6 | 集成与演示 | ⬜ 待开始 | 1941 端到端可录屏 demo |
@@ -143,36 +143,30 @@ snap = session.advance_turn(use_multi_agent=True)
 
 ## 阶段 3：玩家决断链路
 
-### 模块
+### 已完成模块
 
 ```
 engine/
-  player_intent.py   # parse_nl_to_directive (LLM + Pydantic)
-  directives.py      # 生效、倒计时、过期
+  player_intent.py   # NL/意图卡解析、非法决断拒绝、可选 DeepSeek
+  directives.py      # 诏令生效、立即国力修正、priority 元数据
+  turn.py            # GameSession.submit_player_decision()
+scripts/
+  play_campaign.py   # 交互战役「是英雄还是虫子」
 ```
 
-### 流程
+### 验收（`pytest tests/test_phase3.py`）
 
-1. `pending_decision()` 非空 → API 返回 `decision_required`
-2. 前端弹窗：用户 NL 或点选 `suggested_intents`
-3. `POST /decision` → `StrategicDirective` → Verifier
-4. 注入 `ChinaSupreme` 下回合 prompt，`duration_turns` 递减
-5. 其它 Agent **不可见** `raw_quote`，仅可能看到情报侧影
+- [x] 3 个决断点各可 `submit_player_decision` 一次
+- [x] 非法 NL（占领东京）→ `DirectiveRejectError`
+- [x] `hold_core` 中方不出击；`counteroffensive` 可进攻；`guerrilla_expand` 强化中共游击
+- [x] 未决断时 `advance_turn` → `PendingDecisionError`
 
-### StrategicDirective 字段（草案）
+### 交互试玩
 
-```python
-priority: str          # 对应 suggested_intents.id 或组合
-resource_bias: dict    # 区域/战线权重
-diplomacy_tone: str
-duration_turns: int
-raw_quote: str         # 仅 UI 展示
+```bash
+python scripts/play_campaign.py      # 规则+关键词解析
+python scripts/play_campaign.py --llm  # DeepSeek 解析自然语言
 ```
-
-### 验收
-
-- 3 个决断点在游戏中各触发一次
-- 非法 NL（如「立刻占领东京」）被拒绝并返回原因
 
 ---
 

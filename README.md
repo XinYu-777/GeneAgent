@@ -133,6 +133,17 @@ cp .env.example .env
 # DEEPSEEK_API_KEY=sk-...
 ```
 
+### 统帅部决断（阶段 3）
+
+```bash
+python scripts/play_campaign.py       # 三处决断点，自然语言/数字选意图
+python scripts/play_campaign.py --llm  # 用 DeepSeek 理解你的战略诏令
+```
+
+`submit_player_decision(text="不惜代价保住滇缅公路")` → 诏令注入中国 Agent + 立即修正国力。
+
+---
+
 启用 LLM 推进回合：
 
 ```python

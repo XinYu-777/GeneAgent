@@ -9,6 +9,7 @@ from engine.schemas import (
 )
 from engine.state import GameState, game_state_from_world, snapshot_from_state
 from engine.observation import FactionObservation, project
+from engine.player_intent import DirectiveRejectError
 from engine.turn import GameSession, PendingDecisionError, advance_turn
 from engine.turn_runner import collect_agent_actions, create_default_agents
 from engine.world import (
@@ -24,6 +25,7 @@ __all__ = [
     "ActionPlayed",
     "ActiveDirective",
     "DecisionPoint",
+    "DirectiveRejectError",
     "FactionId",
     "GameSession",
     "GameSnapshot",
