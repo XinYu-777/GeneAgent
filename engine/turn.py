@@ -10,7 +10,9 @@ from engine.events import fire_turn_events
 from engine.merger import merge_actions
 from engine.schemas import Action, ActionPlayed, FactionId, GameSnapshot, RouteStatus
 from engine.state import GameState, game_state_from_world, snapshot_from_state
+from engine.agents.base import BaseAgent
 from engine.stub_ai import generate_stub_actions
+from engine.turn_runner import collect_agent_actions, create_default_agents
 from engine.world import (
     DEFAULT_MAP_PATH,
     DEFAULT_SCENARIO_PATH,
@@ -32,9 +34,15 @@ class GameSession:
         state: GameState,
         *,
         skip_decision_gate: bool = False,
+        agents: list[BaseAgent] | None = None,
+        use_llm_agents: bool = False,
+        trace_dir: Path | None = None,
     ):
         self.state = state
         self.skip_decision_gate = skip_decision_gate
+        self.agents = agents
+        self.use_llm_agents = use_llm_agents
+        self.trace_dir = trace_dir
 
     @classmethod
     def new(
@@ -44,6 +52,9 @@ class GameSession:
         *,
         skip_decision_gate: bool = False,
         resolve_all_decisions: bool = False,
+        agents: list[BaseAgent] | None = None,
+        use_llm_agents: bool = False,
+        trace_dir: Path | None = None,
     ) -> GameSession:
         scenario = load_scenario(scenario_path)
         world = load_world_map(map_path)
@@ -55,7 +66,13 @@ class GameSession:
         if resolve_all_decisions:
             state.resolved_decision_ids = {dp.id for dp in scenario.decision_points}
         fire_turn_events(state)
-        return cls(state, skip_decision_gate=skip_decision_gate)
+        return cls(
+            state,
+            skip_decision_gate=skip_decision_gate,
+            agents=agents,
+            use_llm_agents=use_llm_agents,
+            trace_dir=trace_dir,
+        )
 
     def has_pending_decision(self) -> bool:
         return (
@@ -78,6 +95,7 @@ class GameSession:
         actions: list[Action] | None = None,
         *,
         use_stub_ai: bool = False,
+        use_multi_agent: bool = False,
     ) -> GameSnapshot:
         if self.state.turn >= self.state.scenario.max_turns:
             raise ValueError("已达剧本最大回合数")
@@ -88,7 +106,20 @@ class GameSession:
             )
 
         if actions is None:
-            actions = generate_stub_actions(self.state) if use_stub_ai else []
+            if use_multi_agent:
+                roster = self.agents or create_default_agents(
+                    use_llm=self.use_llm_agents
+                )
+                actions, _ = collect_agent_actions(
+                    self.state,
+                    roster,
+                    use_llm=self.use_llm_agents,
+                    trace_dir=self.trace_dir,
+                )
+            elif use_stub_ai:
+                actions = generate_stub_actions(self.state)
+            else:
+                actions = []
 
         resolved = merge_actions(self.state, actions)
         played = [
@@ -141,5 +172,8 @@ def advance_turn(
     actions: list[Action] | None = None,
     *,
     use_stub_ai: bool = False,
+    use_multi_agent: bool = False,
 ) -> GameSnapshot:
-    return session.advance_turn(actions, use_stub_ai=use_stub_ai)
+    return session.advance_turn(
+        actions, use_stub_ai=use_stub_ai, use_multi_agent=use_multi_agent
+    )

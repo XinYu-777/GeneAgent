@@ -77,10 +77,13 @@ GeneAgent/
 │   ├── state.py            # GameState
 │   ├── world.py            # 地图加载与初始快照
 │   ├── verifier.py / merger.py / apply.py / events.py / turn.py
-│   └── stub_ai.py          # 规则 Bot（测试）
+│   ├── observation.py / turn_runner.py
+│   ├── agents/             # 日/中/CPC/苏 独立 Agent
+│   └── stub_ai.py
 ├── tests/
 │   ├── test_phase0.py
-│   └── test_phase1.py      # 阶段 1 验收
+│   ├── test_phase1.py
+│   └── test_phase2.py      # Multi-Agent 验收
 ├── api/                    # [待建] FastAPI
 ├── web/                    # [待建] React 前端
 └── snapshots/              # [待建] 回合回放 JSON
@@ -109,7 +112,7 @@ pip install -r requirements.txt
 ### 验证场景配置与阶段 0 验收
 
 ```bash
-pytest tests/test_phase0.py tests/test_phase1.py -v
+pytest tests/ -v
 ```
 
 或手动检查：
@@ -118,7 +121,35 @@ pytest tests/test_phase0.py tests/test_phase1.py -v
 python -c "from engine import load_scenario, build_initial_snapshot; s=load_scenario('scenarios/1941.yaml'); print(s.title, len(s.decision_points)); snap=build_initial_snapshot(); print(snap.turn, snap.pending_decision.id, len(snap.regions))"
 ```
 
-预期：3 个决断点；回合 0 待决断为 `dp_opening_strategy`；地图 32 区。
+预期：3 个决断点；回合 0 待决断为 `dp_opening_strategy`；地图 30 区。
+
+### DeepSeek（各国 Agent LLM）
+
+**请勿在聊天或代码仓库中提交 API Key。** 在项目根目录创建 `.env`：
+
+```bash
+cp .env.example .env
+# 编辑 .env，填入：
+# DEEPSEEK_API_KEY=sk-...
+```
+
+启用 LLM 推进回合：
+
+```python
+from pathlib import Path
+from engine import GameSession
+
+session = GameSession.new(
+    resolve_all_decisions=True,
+    use_llm_agents=True,
+    trace_dir=Path("traces"),
+)
+session.advance_turn(use_multi_agent=True)
+```
+
+- **API**：`https://api.deepseek.com`（OpenAI 兼容）
+- **默认模型**：`deepseek-chat`（可用环境变量 `DEEPSEEK_MODEL` 覆盖，如 `deepseek-reasoner`）
+- **未配置 Key**：自动回退规则 Bot，trace 中 reasoning 含 `[deepseek-fallback]`
 
 ---
 

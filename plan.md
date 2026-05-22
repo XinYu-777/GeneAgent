@@ -1,7 +1,7 @@
 # 东亚风云 — 实施计划 (plan.md)
 
 本文档与 [README.md](README.md) 配套，记录分阶段交付目标、模块划分与验收标准。  
-**当前进度**：阶段 1 已完成；阶段 2 待开始。
+**当前进度**：阶段 2 已完成；阶段 3 待开始。
 
 ---
 
@@ -22,7 +22,7 @@
 |------|------|------|--------|
 | 0 | 配置与契约 | ✅ 完成 | scenario YAML、决断加载、schemas、world、snapshot-schema |
 | 1 | 世界引擎核心 | ✅ 完成 | Verifier、Merger、apply、events、GameSession.advance_turn |
-| 2 | Multi-Agent 层 | ⬜ 待开始 | 并行 Agent、Observation 投影、Action schema |
+| 2 | Multi-Agent 层 | ✅ 完成 | observation、四国 Agent、turn_runner、trace |
 | 3 | 玩家决断链路 | ⬜ 待开始 | NL→Directive 解析、注入 China Agent |
 | 4 | API 层 | ⬜ 待开始 | FastAPI、snapshot JSON、WebSocket |
 | 5 | 前端 MVP | ⬜ 待开始 | SVG 地图、HUD、决断 Modal、回合动画 |
@@ -104,31 +104,40 @@ engine/
 
 ## 阶段 2：Multi-Agent 层
 
-### 模块
+### 已完成模块
 
 ```
 engine/
-  observation.py   # project(state, faction) 不对称情报
+  observation.py      # project(state, faction) 不对称情报
   agents/
-    base.py
-    japan.py
-    china.py
-    soviet.py
-    cpc.py           # MVP 可先 RuleBasedAgent
-  turn_runner.py     # asyncio.gather 并行调用
+    base.py           # BaseAgent, MockAgent, LLMAgent（无 Key 回退）
+    japan.py / china.py / cpc.py / soviet.py
+  turn_runner.py      # asyncio.gather 并行 + traces/
 ```
 
-### 要求
+### 验收（已通过 `pytest tests/test_phase2.py`）
 
-- **每个势力独立一次 LLM 调用**（或规则 Bot），输出 `Action | list[Action]`
-- 日本 observation **不含** 中国真实兵力，仅 `IntelEstimate`
-- 中国 Agent prompt 可携带 `active_directives[]`
-- 每 Agent 写 `traces/{turn}_{faction}.json`
+- [x] 日、中、CPC、苏 **独立** `decide()`，单回合 ≥3 方有行动
+- [x] 日本对中国区 `garrison` 仅为 `estimate`，非确认真值
+- [x] 中国 `observation.active_directives` 携带诏令；日本不可见
+- [x] `traces/{turn}_{faction}.json` 含 reasoning、actions、observation
+- [x] `advance_turn(use_multi_agent=True)` 连续 10 回合；`MockAgent` 无 LLM 可跑通
 
-### 验收
+### 用法
 
-- 单回合 trace 中可见 3+ 方独立决策
-- 关闭 LLM 时用 `MockAgent` 仍能跑通回合
+```python
+session = GameSession.new(resolve_all_decisions=True, trace_dir=Path("traces"))
+snap = session.advance_turn(use_multi_agent=True)
+```
+
+### LLM：DeepSeek（可选）
+
+- **客户端**：`engine/llm_client.py`（`https://api.deepseek.com`，OpenAI 兼容）
+- **默认模型**：`deepseek-chat`（环境变量 `DEEPSEEK_MODEL` 可改为 `deepseek-reasoner` 等）
+- **密钥**：本地 `.env` 中 `DEEPSEEK_API_KEY`（勿提交仓库；见 `.env.example`）
+- **启用**：`GameSession.new(use_llm_agents=True)` + `advance_turn(use_multi_agent=True)`
+- **回退**：未配置 Key、API 失败或 LLM 输出无合法行动时 → 规则 Bot（trace 含 `[deepseek-fallback]` / `[deepseek-error]`）
+- **测试**：`pytest tests/test_deepseek.py`（mock，不消耗 API）
 
 ---
 
