@@ -1,0 +1,68 @@
+# 东亚风云 — 1941 剧本
+# 决断点：MVP 固定 3 个；新增时在此列表追加条目即可（id 唯一）。
+
+scenario_id: east_asia_1941
+title: 东亚风云 · 1941
+start_turn: 0
+max_turns: 40
+
+# 玩家固定绑定中国；决断仅注入 ChinaSupreme Agent
+player_faction: china
+
+decision_points:
+  - id: dp_opening_strategy
+    order: 1
+    title: 统帅部决断 · 抗战初期战略
+    prompt: 全面抗战初期，中国的总体战略重心应放在哪里？
+    trigger:
+      type: turn
+      value: 0
+    suggested_intents:
+      - id: guerrilla_expand
+        label: 扩大敌后游击，持久牵制
+      - id: hold_core
+        label: 巩固西南大后方，待机而动
+      - id: seek_allied_aid
+        label: 尽早争取国际援助与舆论
+    directive_duration_turns: 5
+
+  - id: dp_post_pearl_harbor
+    order: 2
+    title: 统帅部决断 · 珍珠港之后
+    prompt: 日军南进太平洋，中国战场应如何配合全局？是否不惜代价保住援华交通线？
+    trigger:
+      type: event
+      value: evt_pearl_harbor
+    suggested_intents:
+      - id: hold_burma
+        label: 优先保住滇缅公路与缅甸方向
+      - id: hold_core
+        label: 收缩外线，巩固内地与西南
+      - id: seek_allied_aid
+        label: 强化对同盟国的战略沟通与求援
+    directive_duration_turns: 4
+
+  - id: dp_1944_crisis
+    order: 3
+    title: 统帅部决断 · 战线危机
+    prompt: 正面战场压力骤增，是继续死守、国际求援，还是有限反击？
+    trigger:
+      type: event
+      value: evt_china_1944_pressure
+    suggested_intents:
+      - id: counteroffensive_huabei
+        label: 在华北方向组织有限反击
+      - id: seek_allied_aid
+        label: 全力争取同盟国物资与空援
+      - id: hold_core
+        label: 战略收缩，保存国力
+    directive_duration_turns: 3
+
+# 剧本事件（与决断触发器 event 字段对应；效果在引擎中实现）
+events:
+  - id: evt_pearl_harbor
+    turn: 6
+    description: 太平洋战争爆发，日军南进加剧
+  - id: evt_china_1944_pressure
+    turn: 28
+    description: 中国正面战场持续高压（抽象危机事件）
