@@ -67,8 +67,16 @@ GeneAgent/
 ├── requirements.txt
 ├── scenarios/
 │   └── 1941.yaml           # 剧本、事件、决断点
+├── data/
+│   └── regions_1941.yaml   # 32 战略区 + 补给线
+├── schemas/
+│   └── snapshot-schema.json
 ├── engine/
-│   └── decision_points.py  # 场景与决断配置加载（已有）
+│   ├── decision_points.py
+│   ├── schemas.py          # Action / GameSnapshot / StrategicDirective
+│   └── world.py            # 地图加载与初始快照
+├── tests/
+│   └── test_phase0.py      # 阶段 0 验收
 ├── api/                    # [待建] FastAPI
 ├── web/                    # [待建] React 前端
 └── snapshots/              # [待建] 回合回放 JSON
@@ -94,13 +102,19 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 验证场景配置
+### 验证场景配置与阶段 0 验收
 
 ```bash
-python -c "from engine import load_scenario; s=load_scenario('scenarios/1941.yaml'); print(s.title); print([d.id for d in s.decision_points])"
+pytest tests/test_phase0.py -v
 ```
 
-预期输出包含三个决断点 ID：`dp_opening_strategy`、`dp_post_pearl_harbor`、`dp_1944_crisis`。
+或手动检查：
+
+```bash
+python -c "from engine import load_scenario, build_initial_snapshot; s=load_scenario('scenarios/1941.yaml'); print(s.title, len(s.decision_points)); snap=build_initial_snapshot(); print(snap.turn, snap.pending_decision.id, len(snap.regions))"
+```
+
+预期：3 个决断点；回合 0 待决断为 `dp_opening_strategy`；地图 32 区。
 
 ---
 

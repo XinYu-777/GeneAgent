@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/XinYu-777/GeneAgent/schemas/snapshot-schema.json",
+  "title": "GameSnapshot",
+  "description": "东亚风云单回合前后端共享快照契约（阶段 0）",
+  "type": "object",
+  "required": [
+    "scenario_id",
+    "title",
+    "turn",
+    "regions",
+    "routes",
+    "factions",
+    "actions_played",
+    "active_directives",
+    "fired_events"
+  ],
+  "properties": {
+    "scenario_id": { "type": "string" },
+    "title": { "type": "string" },
+    "turn": { "type": "integer", "minimum": 0 },
+    "regions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/RegionSnapshot" },
+      "minItems": 1
+    },
+    "routes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/RouteSnapshot" }
+    },
+    "factions": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/FactionSnapshot" }
+    },
+    "actions_played": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ActionPlayed" }
+    },
+    "active_directives": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ActiveDirective" }
+    },
+    "pending_decision": {
+      "oneOf": [{ "$ref": "#/$defs/PendingDecisionSnapshot" }, { "type": "null" }]
+    },
+    "fired_events": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "FactionId": {
+      "type": "string",
+      "enum": ["china", "japan", "soviet", "cpc", "allied", "neutral"]
+    },
+    "RegionSnapshot": {
+      "type": "object",
+      "required": ["id", "name", "owner", "garrison"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "owner": { "$ref": "#/$defs/FactionId" },
+        "garrison": { "type": "number", "minimum": 0, "maximum": 1 },
+        "unrest": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "RouteSnapshot": {
+      "type": "object",
+      "required": ["id", "name", "status"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["open", "cut", "contested"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "FactionSnapshot": {
+      "type": "object",
+      "required": ["manpower", "supply"],
+      "properties": {
+        "manpower": { "type": "integer", "minimum": 0 },
+        "supply": { "type": "number", "minimum": 0, "maximum": 1 },
+        "morale": { "type": "number", "minimum": 0, "maximum": 1 },
+        "industrial_capacity": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "PendingDecisionSnapshot": {
+      "type": "object",
+      "required": ["id", "title", "prompt", "suggested_intents"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "prompt": { "type": "string" },
+        "suggested_intents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StrategicDirective": {
+      "type": "object",
+      "required": ["priority", "duration_turns"],
+      "properties": {
+        "priority": { "type": "string" },
+        "resource_bias": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        },
+        "diplomacy_tone": {
+          "type": "string",
+          "enum": ["urgent", "moderate", "cautious"]
+        },
+        "duration_turns": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "raw_quote": { "type": "string" },
+        "source_decision_id": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "ActiveDirective": {
+      "type": "object",
+      "required": ["directive", "turns_left"],
+      "properties": {
+        "directive": { "$ref": "#/$defs/StrategicDirective" },
+        "turns_left": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "ActionPlayed": {
+      "type": "object",
+      "required": ["faction", "action", "accepted"],
+      "properties": {
+        "faction": { "$ref": "#/$defs/FactionId" },
+        "action": { "type": "object" },
+        "accepted": { "type": "boolean" },
+        "message": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

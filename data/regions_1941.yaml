@@ -1,0 +1,168 @@
+# 1941 战略区草案（32 区，邻接无向对称）
+
+routes:
+  - id: burma_road
+    name: 滇缅公路
+    status: open
+    connects: [southwest_china, burma]
+  - id: hump_airlift
+    name: 驼峰空运
+    status: open
+    connects: [southwest_china, allied_hub]
+  - id: pacific_shipping
+    name: 南洋海运
+    status: open
+    connects: [japan_home, malaya, philippines]
+
+regions:
+  - id: soviet_far_north
+    name: 苏联远东北部
+    owner: soviet
+    neighbors: [soviet_primorye, manchuria, sakhalin]
+    garrison: 0.5
+  - id: sakhalin
+    name: 库页岛
+    owner: soviet
+    neighbors: [soviet_far_north, soviet_primorye]
+    garrison: 0.4
+  - id: soviet_primorye
+    name: 苏联滨海区
+    owner: soviet
+    neighbors: [soviet_far_north, sakhalin, manchuria, korea]
+    garrison: 0.6
+  - id: manchuria
+    name: 满洲
+    owner: japan
+    neighbors: [soviet_far_north, soviet_primorye, inner_mongolia, north_china, korea]
+    garrison: 0.8
+  - id: inner_mongolia
+    name: 蒙疆
+    owner: japan
+    neighbors: [manchuria, north_china, northwest_china]
+    garrison: 0.65
+  - id: korea
+    name: 朝鲜半岛
+    owner: japan
+    neighbors: [soviet_primorye, manchuria, japan_home]
+    garrison: 0.7
+  - id: japan_home
+    name: 日本本土
+    owner: japan
+    neighbors: [korea, taiwan, pacific_mandate]
+    garrison: 0.9
+  - id: pacific_mandate
+    name: 太平洋委任统治区
+    owner: japan
+    neighbors: [japan_home, philippines, new_guinea]
+    garrison: 0.6
+  - id: taiwan
+    name: 台湾
+    owner: japan
+    neighbors: [japan_home, fujian, philippines]
+    garrison: 0.75
+  - id: north_china
+    name: 华北
+    owner: japan
+    neighbors: [manchuria, inner_mongolia, northwest_china, east_china, central_china, cpc_shaanxi]
+    garrison: 0.7
+  - id: northwest_china
+    name: 西北
+    owner: china
+    neighbors: [inner_mongolia, north_china, cpc_shaanxi, southwest_china]
+    garrison: 0.5
+  - id: east_china
+    name: 华东
+    owner: japan
+    neighbors: [north_china, fujian, jiangxi, central_china, south_china]
+    garrison: 0.75
+  - id: fujian
+    name: 福建沿海
+    owner: japan
+    neighbors: [east_china, taiwan, south_china, jiangxi]
+    garrison: 0.6
+  - id: central_china
+    name: 华中
+    owner: china
+    neighbors: [north_china, east_china, hunan, jiangxi, southwest_china, cpc_shaanxi]
+    garrison: 0.55
+    unrest: 0.2
+  - id: hunan
+    name: 湖南
+    owner: china
+    neighbors: [central_china, jiangxi, south_china, guangxi]
+    garrison: 0.5
+  - id: jiangxi
+    name: 江西
+    owner: china
+    neighbors: [east_china, fujian, central_china, hunan, south_china]
+    garrison: 0.48
+  - id: south_china
+    name: 华南
+    owner: china
+    neighbors: [east_china, fujian, jiangxi, hunan, guangxi, french_indochina]
+    garrison: 0.5
+  - id: guangxi
+    name: 广西
+    owner: china
+    neighbors: [hunan, south_china, french_indochina, yunnan]
+    garrison: 0.48
+  - id: yunnan
+    name: 云南
+    owner: china
+    neighbors: [guangxi, southwest_china, burma, french_indochina]
+    garrison: 0.52
+  - id: southwest_china
+    name: 西南大后方
+    owner: china
+    neighbors: [northwest_china, central_china, cpc_shaanxi, yunnan, burma, allied_hub]
+    garrison: 0.65
+  - id: allied_hub
+    name: 同盟援华枢纽
+    owner: allied
+    neighbors: [southwest_china]
+    garrison: 0.0
+  - id: cpc_shaanxi
+    name: 陕甘宁根据地
+    owner: cpc
+    neighbors: [north_china, northwest_china, central_china, southwest_china]
+    garrison: 0.45
+  - id: burma
+    name: 缅甸
+    owner: allied
+    neighbors: [yunnan, southwest_china, french_indochina, thailand, malaya]
+    garrison: 0.4
+  - id: french_indochina
+    name: 法属印支
+    owner: neutral
+    neighbors: [south_china, guangxi, yunnan, burma, thailand]
+    garrison: 0.3
+  - id: thailand
+    name: 泰国
+    owner: neutral
+    neighbors: [french_indochina, burma, malaya]
+    garrison: 0.35
+  - id: malaya
+    name: 马来亚
+    owner: allied
+    neighbors: [burma, thailand, borneo, philippines]
+    garrison: 0.35
+  - id: borneo
+    name: 婆罗洲
+    owner: allied
+    neighbors: [malaya, dutch_east_indies, philippines]
+    garrison: 0.3
+  - id: philippines
+    name: 菲律宾
+    owner: allied
+    neighbors: [taiwan, pacific_mandate, malaya, borneo, dutch_east_indies]
+    garrison: 0.4
+  - id: dutch_east_indies
+    name: 荷属东印度
+    owner: allied
+    neighbors: [borneo, philippines, new_guinea]
+    garrison: 0.35
+  - id: new_guinea
+    name: 新几内亚
+    owner: allied
+    neighbors: [pacific_mandate, dutch_east_indies]
+    garrison: 0.3

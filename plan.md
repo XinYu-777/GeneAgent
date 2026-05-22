@@ -1,7 +1,7 @@
 # 东亚风云 — 实施计划 (plan.md)
 
 本文档与 [README.md](README.md) 配套，记录分阶段交付目标、模块划分与验收标准。  
-**当前进度**：阶段 0 部分完成（场景 YAML + 决断配置加载器）。
+**当前进度**：阶段 0 已完成；阶段 1 待开始。
 
 ---
 
@@ -20,7 +20,7 @@
 
 | 阶段 | 名称 | 状态 | 交付物 |
 |------|------|------|--------|
-| 0 | 配置与契约 | 🟡 进行中 | scenario YAML、决断加载、README/plan |
+| 0 | 配置与契约 | ✅ 完成 | scenario YAML、决断加载、schemas、world、snapshot-schema |
 | 1 | 世界引擎核心 | ⬜ 待开始 | 区域图、资源、Verifier、Merger、回合推进 |
 | 2 | Multi-Agent 层 | ⬜ 待开始 | 并行 Agent、Observation 投影、Action schema |
 | 3 | 玩家决断链路 | ⬜ 待开始 | NL→Directive 解析、注入 China Agent |
@@ -37,18 +37,18 @@
 
 - [x] `scenarios/1941.yaml` — 3 决断点 + 2 剧本事件
 - [x] `engine/decision_points.py` — `ScenarioConfig`、`pending_decision()`
+- [x] `engine/schemas.py` — `Action`, `StrategicDirective`, `GameSnapshot`, `FactionId`
+- [x] `engine/world.py` — 32 区邻接表 + `build_initial_snapshot()`
+- [x] `data/regions_1941.yaml` — 地图与补给线数据
+- [x] `schemas/snapshot-schema.json` — 前后端回合 JSON 契约
+- [x] `tests/test_phase0.py` — 验收测试
 - [x] `README.md`、`plan.md`
 
-### 待办
+### 验收（已通过 `pytest tests/test_phase0.py`）
 
-- [ ] `engine/schemas.py` — `Action`, `StrategicDirective`, `GameSnapshot`, `FactionId`
-- [ ] `engine/world.py` — 区域邻接表草案（约 30–40 区）
-- [ ] `docs/snapshot-schema.json` — 前后端回合 JSON 契约（可放在 `schemas/`）
-
-### 验收
-
-- `load_scenario('scenarios/1941.yaml')` 无报错
-- `pending_decision()` 在 turn=0 / 事件集合下返回预期决断
+- [x] `load_scenario('scenarios/1941.yaml')` 无报错
+- [x] `pending_decision()` 在 turn=0 / 事件集合下返回预期决断
+- [x] 初始 `GameSnapshot` 符合 `schemas/snapshot-schema.json`
 
 ---
 
