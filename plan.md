@@ -1,7 +1,7 @@
 # 东亚风云 — 实施计划 (plan.md)
 
 本文档与 [README.md](README.md) 配套，记录分阶段交付目标、模块划分与验收标准。  
-**当前进度**：阶段 0 已完成；阶段 1 待开始。
+**当前进度**：阶段 1 已完成；阶段 2 待开始。
 
 ---
 
@@ -21,7 +21,7 @@
 | 阶段 | 名称 | 状态 | 交付物 |
 |------|------|------|--------|
 | 0 | 配置与契约 | ✅ 完成 | scenario YAML、决断加载、schemas、world、snapshot-schema |
-| 1 | 世界引擎核心 | ⬜ 待开始 | 区域图、资源、Verifier、Merger、回合推进 |
+| 1 | 世界引擎核心 | ✅ 完成 | Verifier、Merger、apply、events、GameSession.advance_turn |
 | 2 | Multi-Agent 层 | ⬜ 待开始 | 并行 Agent、Observation 投影、Action schema |
 | 3 | 玩家决断链路 | ⬜ 待开始 | NL→Directive 解析、注入 China Agent |
 | 4 | API 层 | ⬜ 待开始 | FastAPI、snapshot JSON、WebSocket |
@@ -54,16 +54,27 @@
 
 ## 阶段 1：世界引擎核心
 
-### 模块
+### 已完成模块
 
 ```
 engine/
-  world.py       # GameState, Region, Route, apply_action
+  state.py       # GameState、快照互转
+  world.py       # 地图加载、build_initial_snapshot
   verifier.py    # 合法性检查
   merger.py      # 多 Action 冲突仲裁
+  apply.py       # 行动结算
+  combat.py      # 攻势/守势计算
   events.py      # 回合事件触发（珍珠港、1944 危机等）
-  turn.py        # advance_turn()
+  turn.py        # GameSession.advance_turn()
+  stub_ai.py     # 规则 Bot（集成测试用）
 ```
+
+### 验收（已通过 `pytest tests/test_phase1.py`）
+
+- [x] 纯 Python：`advance_turn(use_stub_ai=True)` 连续 10 回合无异常
+- [x] Merger：中日同时进攻 `central_china` 时一方被合并否决
+- [x] Verifier：非邻接进攻、过早苏军入关被拒
+- [x] 未决决断时 `advance_turn` 抛出 `PendingDecisionError`
 
 ### 区域划分（MVP 约 35 区）
 

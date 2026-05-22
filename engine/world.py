@@ -112,36 +112,9 @@ def build_initial_snapshot(
     map_path: str | Path = DEFAULT_MAP_PATH,
 ) -> GameSnapshot:
     """根据剧本与地图数据构建回合 0 快照。"""
-    scenario = load_scenario(scenario_path)
-    world = load_world_map(map_path)
+    from engine.turn import GameSession
 
-    turn = scenario.start_turn
-    fired: set[str] = set()
-    pending_dp = scenario.pending_decision(turn, fired, set())
-
-    return GameSnapshot(
-        scenario_id=scenario.scenario_id,
-        title=scenario.title,
-        turn=turn,
-        regions=[
-            RegionSnapshot(
-                id=r.id,
-                name=r.name,
-                owner=r.owner,
-                garrison=r.garrison,
-                unrest=r.unrest,
-            )
-            for r in world.regions
-        ],
-        routes=[
-            RouteSnapshot(id=r.id, name=r.name, status=r.status) for r in world.routes
-        ],
-        factions=_default_faction_snapshots(),
-        pending_decision=(
-            decision_to_pending_snapshot(pending_dp) if pending_dp else None
-        ),
-        fired_events=sorted(fired),
-    )
+    return GameSession.new(scenario_path, map_path).get_snapshot()
 
 
 def events_for_turn(scenario: ScenarioConfig, turn: int) -> list[str]:

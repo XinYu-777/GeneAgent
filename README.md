@@ -74,9 +74,13 @@ GeneAgent/
 ├── engine/
 │   ├── decision_points.py
 │   ├── schemas.py          # Action / GameSnapshot / StrategicDirective
-│   └── world.py            # 地图加载与初始快照
+│   ├── state.py            # GameState
+│   ├── world.py            # 地图加载与初始快照
+│   ├── verifier.py / merger.py / apply.py / events.py / turn.py
+│   └── stub_ai.py          # 规则 Bot（测试）
 ├── tests/
-│   └── test_phase0.py      # 阶段 0 验收
+│   ├── test_phase0.py
+│   └── test_phase1.py      # 阶段 1 验收
 ├── api/                    # [待建] FastAPI
 ├── web/                    # [待建] React 前端
 └── snapshots/              # [待建] 回合回放 JSON
@@ -105,7 +109,7 @@ pip install -r requirements.txt
 ### 验证场景配置与阶段 0 验收
 
 ```bash
-pytest tests/test_phase0.py -v
+pytest tests/test_phase0.py tests/test_phase1.py -v
 ```
 
 或手动检查：

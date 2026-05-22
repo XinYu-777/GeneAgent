@@ -7,6 +7,8 @@ from engine.schemas import (
     GameSnapshot,
     StrategicDirective,
 )
+from engine.state import GameState, game_state_from_world, snapshot_from_state
+from engine.turn import GameSession, PendingDecisionError, advance_turn
 from engine.world import (
     WorldMap,
     build_initial_snapshot,
@@ -21,13 +23,19 @@ __all__ = [
     "ActiveDirective",
     "DecisionPoint",
     "FactionId",
+    "GameSession",
     "GameSnapshot",
+    "GameState",
+    "PendingDecisionError",
     "ScenarioConfig",
     "StrategicDirective",
     "WorldMap",
+    "advance_turn",
     "build_initial_snapshot",
     "events_for_turn",
+    "game_state_from_world",
     "load_scenario",
     "load_world_map",
     "scenario_events_by_turn",
+    "snapshot_from_state",
 ]
